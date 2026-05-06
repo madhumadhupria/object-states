@@ -52,7 +52,7 @@ Five visual states, each driven by tokens pulled from the Figma source spec.
 | ------------ | ------------------------------------ | ------------------------------- |
 | `default`    | `#808080` @ 1px, full opacity        | `#ffffff` solid                  |
 | `hover`      | `#0696D7` @ ~1.4px                   | `#9BD5EF` @ 30%                  |
-| `selected`   | `#0696D7` @ 2px                      | `#CDEAF7` @ 60%                  |
+| `selected`   | `#0588C9` @ 2px                      | `#CDEAF7` @ 60%                  |
 | `pressed`    | `#006EAF` @ ~2.4px                   | `#6AC0E7` @ 50%                  |
 | `background` | `#D9D9D9` @ 0.5px, 50% opacity        | `#ffffff` @ 45%                  |
 | `disabled`   | `#D9D9D9` @ 0.5px, 25% opacity        | `#EEEEEE` @ 20%                  |

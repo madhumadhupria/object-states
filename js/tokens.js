@@ -16,6 +16,10 @@ export const tokens = {
   border: {
     base: 0x808080,
     accent: 0x0696d7,
+    // Selected sits between hover (border.accent) and pressed (pressed.line).
+    // Not in the source Figma spec — added so the three blue states read as a
+    // clear progression rather than hover and selected sharing one blue.
+    accentSelected: 0x0588c9,
   },
   pressed: {
     line: 0x006eaf,
@@ -87,7 +91,7 @@ export const stateSpec = {
     surfaceOpacity: 0.30,
   },
   selected: {
-    outlineColor: tokens.border.accent,
+    outlineColor: tokens.border.accentSelected,
     outlineWidth: 2.0,
     outlineOpacity: 1.0,
     surfaceColor: tokens.selected.fill,
