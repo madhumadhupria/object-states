@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Object States — 3D Interaction Language</title>
+    <link rel="stylesheet" href="./styles/main.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.161.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <header class="legend">
+      <div class="legend__title">Object States</div>
+      <div class="legend__hint">
+        Hover an object to highlight · Click to select · Shift+Click to mark disabled · Press <kbd>Esc</kbd> to clear
+      </div>
+    </header>
+
+    <main id="stage" aria-label="3D scene"></main>
+
+    <aside class="state-panel" aria-live="polite">
+      <div class="state-panel__row">
+        <span class="state-panel__label">Active</span>
+        <span class="state-panel__value" data-active>—</span>
+      </div>
+      <div class="state-panel__row">
+        <span class="state-panel__label">Mode</span>
+        <span class="state-panel__value" data-mode>idle</span>
+      </div>
+    </aside>
+
+    <script type="module" src="./js/main.js"></script>
+  </body>
+</html>
