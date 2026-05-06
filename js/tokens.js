@@ -55,12 +55,12 @@ export const buildingPalette = {
  * enough to read at rest, and to fade them properly in the recede states.
  */
 export const colorModeOverlay = {
-  default:    { ratio: 0.0,  opacity: 1.00 },
-  hover:      { ratio: 0.20, opacity: 0.95 },
-  selected:   { ratio: 0.40, opacity: 0.90 },
-  pressed:    { ratio: 0.55, opacity: 0.90 },
-  background: { ratio: 1.0,  opacity: 0.45 },
-  disabled:   { ratio: 1.0,  opacity: 0.20 },
+  default:    { ratio: 0.0, opacity: 1.00 },
+  hover:      { ratio: 0.0, opacity: 0.60 },
+  selected:   { ratio: 0.0, opacity: 0.60 },
+  pressed:    { ratio: 0.0, opacity: 0.60 },
+  background: { ratio: 1.0, opacity: 0.45 },
+  disabled:   { ratio: 1.0, opacity: 0.20 },
 };
 
 /**

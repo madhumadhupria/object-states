@@ -1,24 +1,26 @@
 /**
  * State coordinator.
  *
- * Owns: which building (if any) is the focus, which buildings are
- * disabled, and the per-frame interpolation that drives every
- * material toward its target state's visual spec.
+ * Tracks: which building is hovered, which is the sticky selection,
+ * which is being pressed, and which are disabled. Hover and selection
+ * are independent — hovering a different object doesn't clear the
+ * selection. Both treatments coexist; everything else recedes.
  *
- * Single rule: at most one building is "focused" (hover or selected
- * or pressed). Every other non-disabled building is "background".
- * Disabled buildings stay disabled regardless of focus.
+ * Per-building target state priority (highest first):
+ *   disabled  →  pressed  →  hover  →  selected  →  background  →  default
+ *
+ * Hover beats selected only on a *different* object: the selected
+ * building always reads as `selected`, so re-hovering the selection
+ * does not downgrade it.
  */
 
 import * as THREE from "three";
 import { stateSpec, colorModeOverlay } from "./tokens.js";
 
-// Scratch color reused inside the per-frame tween — keeps the loop allocation-free.
 const _scratchColor = new THREE.Color();
 
-const LERP_SPEED = 8.0; // higher = snappier; tuned to feel calm but responsive
+const LERP_SPEED = 8.0;
 
-// Precomputed target colors per state — avoids allocating in the render loop.
 const targetColors = Object.fromEntries(
   Object.entries(stateSpec).map(([name, spec]) => [
     name,
@@ -30,43 +32,38 @@ const targetColors = Object.fromEntries(
 );
 
 export class StateController {
-  constructor(buildings, panelEls) {
+  constructor(buildings) {
     this.buildings = buildings;
-    this.panel = panelEls;
 
-    this.focusId = null;       // currently hovered or selected
-    this.selectedId = null;    // sticky selection (click)
-    this.pressedId = null;     // mousedown active
-    this.disabled = new Set(); // ids that are non-interactive
-    this.colorMode = false;    // when true, buildings show identity colors at rest
+    this.hoverId = null;
+    this.selectedId = null;
+    this.pressedId = null;
+    this.disabled = new Set();
+    this.colorMode = false;
 
     this.refresh();
   }
 
   setColorMode(on) {
     this.colorMode = !!on;
-    // No state change needed — the tween loop reads colorMode each frame.
   }
 
   setHover(id) {
-    // Hover only matters if nothing is selected — selection wins.
-    if (this.selectedId) return;
-    if (this.focusId === id) return;
-    this.focusId = id;
+    if (id && this.disabled.has(id)) id = null;
+    if (this.hoverId === id) return;
+    this.hoverId = id;
     this.refresh();
   }
 
   clearHover() {
-    if (this.selectedId) return;
-    if (this.focusId === null) return;
-    this.focusId = null;
+    if (this.hoverId === null) return;
+    this.hoverId = null;
     this.refresh();
   }
 
   setSelected(id) {
     if (id && this.disabled.has(id)) return;
     this.selectedId = id;
-    this.focusId = id;
     this.refresh();
   }
 
@@ -81,27 +78,22 @@ export class StateController {
     else {
       this.disabled.add(id);
       if (this.selectedId === id) this.selectedId = null;
-      if (this.focusId === id) this.focusId = null;
+      if (this.hoverId === id) this.hoverId = null;
+      if (this.pressedId === id) this.pressedId = null;
     }
     this.refresh();
   }
 
   clearAll() {
-    this.focusId = null;
+    this.hoverId = null;
     this.selectedId = null;
     this.pressedId = null;
     this.refresh();
   }
 
-  /**
-   * Resolve the visual state for every building based on current focus.
-   * Called whenever the input state changes — actual material updates
-   * happen in update() each frame, which lerps toward these targets.
-   */
   refresh() {
-    const focus = this.focusId; // hover or selected (selected pinned in setSelected)
-    const pressed = this.pressedId;
-    const anyFocus = focus !== null && focus !== undefined;
+    const anyFocus =
+      this.hoverId !== null || this.selectedId !== null || this.pressedId !== null;
 
     for (const b of this.buildings) {
       const id = b.userData.id;
@@ -109,11 +101,12 @@ export class StateController {
       let target;
       if (this.disabled.has(id)) {
         target = "disabled";
-      } else if (id === pressed) {
+      } else if (id === this.pressedId) {
         target = "pressed";
       } else if (id === this.selectedId) {
+        // Selection sticks even when the cursor is over a different object.
         target = "selected";
-      } else if (id === focus) {
+      } else if (id === this.hoverId) {
         target = "hover";
       } else if (anyFocus) {
         target = "background";
@@ -123,28 +116,11 @@ export class StateController {
 
       b.userData.targetState = target;
     }
-
-    this.updatePanel();
-  }
-
-  updatePanel() {
-    if (!this.panel) return;
-    const active = this.selectedId ?? this.focusId;
-    const activeName = active
-      ? this.buildings.find((b) => b.userData.id === active)?.userData.label ?? active
-      : "—";
-    this.panel.active.textContent = activeName;
-
-    let mode = "idle";
-    if (this.pressedId) mode = "pressed";
-    else if (this.selectedId) mode = "selected";
-    else if (this.focusId) mode = "hover";
-    this.panel.mode.textContent = mode;
   }
 
   /**
-   * Per-frame tween: nudge every building's current visual params
-   * toward those of its target state spec. dt in seconds.
+   * Per-frame tween: nudge each building's current visual params toward
+   * those of its target state. dt in seconds.
    */
   update(dt) {
     const t = 1 - Math.exp(-LERP_SPEED * dt);
@@ -156,12 +132,12 @@ export class StateController {
       const colors = targetColors[target] ?? targetColors.default;
       const cur = b.userData.current;
 
-      // Resolve target surface color & opacity:
-      // - Monochrome mode: take spec values directly.
-      // - Color mode: blend the building's identity color with the spec's
-      //   tint per the colorModeOverlay ratio. This lets accent treatments
-      //   (hover/selected/pressed) still read while the building's identity
-      //   stays visible at rest, and lets background/disabled fully recede.
+      // Surface color/opacity resolution differs by mode:
+      // - Monochrome: take the spec's neutral tint directly.
+      // - Color mode: keep the building's identity color (ratio 0) for
+      //   default/hover/selected/pressed, dimming opacity to 60% in the
+      //   active states; fully replace with the spec for background and
+      //   disabled so the recede behavior is preserved.
       let targetSurface = colors.surface;
       let targetOpacity = spec.surfaceOpacity;
       if (colorMode) {

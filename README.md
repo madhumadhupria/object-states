@@ -38,9 +38,11 @@ real HTTP origin.)
 Each building has an architectural identity color (clay, slate, ochre, sage, terracotta, slate-purple). All five state behaviors carry over:
 
 - **default** shows the building's color at full opacity
-- **hover / selected / pressed** blend the accent treatment over the base color so the blue outline still leads while identity remains visible (20 / 40 / 55 % blend)
-- **background** fades to white at ~45% — the rest of the scene still recedes into a quiet "context massing" state when one building is the focus
+- **hover / selected / pressed** keep the building's color but tone it down to 60% opacity; the blue outline carries the state cue
+- **background** fades to white at ~45% — the rest of the scene still recedes into "context massing"
 - **disabled** still nearly disappears
+
+Hover and selection are independent: hovering a different object does **not** clear the selection. The selected object stays selected, the hovered object shows hover, and everything else recedes.
 
 ## State system
 

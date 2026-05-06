@@ -15,10 +15,6 @@ import { createScene, createGround, getOutlineResolution } from "./buildings.js"
 import { StateController } from "./states.js";
 
 const stage = document.getElementById("stage");
-const panel = {
-  active: document.querySelector("[data-active]"),
-  mode: document.querySelector("[data-mode]"),
-};
 
 const renderer = createRenderer(stage);
 const camera = createCamera();
@@ -31,7 +27,7 @@ scene.add(ground);
 const buildings = createScene();
 for (const b of buildings) scene.add(b);
 
-const controller = new StateController(buildings, panel);
+const controller = new StateController(buildings);
 
 bindResize(renderer, camera, getOutlineResolution());
 
