@@ -31,6 +31,16 @@ real HTTP origin.)
 | Click empty space      | Clear selection                                          |
 | `Shift` + click        | Toggle **disabled** on that object                      |
 | `Esc`                  | Clear everything                                         |
+| Click the **Color** toggle (or press `C`) | Switch between monochrome massing and identity-colored buildings |
+
+### Color mode
+
+Each building has an architectural identity color (clay, slate, ochre, sage, terracotta, slate-purple). All five state behaviors carry over:
+
+- **default** shows the building's color at full opacity
+- **hover / selected / pressed** blend the accent treatment over the base color so the blue outline still leads while identity remains visible (20 / 40 / 55 % blend)
+- **background** fades to white at ~45% — the rest of the scene still recedes into a quiet "context massing" state when one building is the focus
+- **disabled** still nearly disappears
 
 ## State system
 

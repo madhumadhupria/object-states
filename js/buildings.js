@@ -13,7 +13,7 @@ import * as THREE from "three";
 import { Line2 } from "three/addons/lines/Line2.js";
 import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 import { LineSegmentsGeometry } from "three/addons/lines/LineSegmentsGeometry.js";
-import { stateSpec, tokens } from "./tokens.js";
+import { stateSpec, tokens, buildingPalette } from "./tokens.js";
 
 const RESOLUTION = new THREE.Vector2(window.innerWidth, window.innerHeight);
 
@@ -84,6 +84,9 @@ function makeBuilding({ id, geometry, position, rotationY = 0, label }) {
     outline,
     state: "default",
     targetState: "default",
+    // Identity color used in color mode. Falls back to the neutral surface
+    // when the id has no palette entry — keeps the lookup safe.
+    baseColor: new THREE.Color(buildingPalette[id] ?? tokens.surface.level100),
     // Animated values — interpolated each frame toward the target state's spec.
     current: {
       surfaceColor: new THREE.Color(spec.surfaceColor),

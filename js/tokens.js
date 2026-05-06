@@ -31,6 +31,39 @@ export const tokens = {
 };
 
 /**
+ * Architectural palette used when "color mode" is enabled. Muted, low-chroma
+ * tones that read as material study models (clay, slate, ochre, sage) rather
+ * than primary swatches. Each building is assigned one entry by id.
+ */
+export const buildingPalette = {
+  tower: 0xb85c5c,    // muted brick
+  midrise: 0x4a7c7e,  // slate teal
+  wing: 0xc9a96e,     // warm ochre
+  pavilion: 0x6e8b6f, // sage
+  pylon: 0xc77b45,    // terracotta
+  slab: 0x6f6989,     // slate purple
+};
+
+/**
+ * In color mode, the building's identity color shows through during the
+ * resting and active states; the state spec's surface tint is blended in at
+ * a per-state ratio (0 = pure base color, 1 = pure spec). Background and
+ * disabled states fully adopt the spec color so the scene still reads as
+ * "white massing models" when something else is the focus.
+ *
+ * Surface opacity is overridden per state to keep colored buildings opaque
+ * enough to read at rest, and to fade them properly in the recede states.
+ */
+export const colorModeOverlay = {
+  default:    { ratio: 0.0,  opacity: 1.00 },
+  hover:      { ratio: 0.20, opacity: 0.95 },
+  selected:   { ratio: 0.40, opacity: 0.90 },
+  pressed:    { ratio: 0.55, opacity: 0.90 },
+  background: { ratio: 1.0,  opacity: 0.45 },
+  disabled:   { ratio: 1.0,  opacity: 0.20 },
+};
+
+/**
  * Visual specification per state — outline color, outline weight,
  * surface tint, and surface opacity. Numbers map directly into the
  * material/line params used by buildings.js.

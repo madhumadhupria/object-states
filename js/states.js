@@ -11,7 +11,10 @@
  */
 
 import * as THREE from "three";
-import { stateSpec } from "./tokens.js";
+import { stateSpec, colorModeOverlay } from "./tokens.js";
+
+// Scratch color reused inside the per-frame tween — keeps the loop allocation-free.
+const _scratchColor = new THREE.Color();
 
 const LERP_SPEED = 8.0; // higher = snappier; tuned to feel calm but responsive
 
@@ -35,8 +38,14 @@ export class StateController {
     this.selectedId = null;    // sticky selection (click)
     this.pressedId = null;     // mousedown active
     this.disabled = new Set(); // ids that are non-interactive
+    this.colorMode = false;    // when true, buildings show identity colors at rest
 
     this.refresh();
+  }
+
+  setColorMode(on) {
+    this.colorMode = !!on;
+    // No state change needed — the tween loop reads colorMode each frame.
   }
 
   setHover(id) {
@@ -139,6 +148,7 @@ export class StateController {
    */
   update(dt) {
     const t = 1 - Math.exp(-LERP_SPEED * dt);
+    const colorMode = this.colorMode;
 
     for (const b of this.buildings) {
       const target = b.userData.targetState;
@@ -146,8 +156,24 @@ export class StateController {
       const colors = targetColors[target] ?? targetColors.default;
       const cur = b.userData.current;
 
-      cur.surfaceColor.lerp(colors.surface, t);
-      cur.surfaceOpacity = lerp(cur.surfaceOpacity, spec.surfaceOpacity, t);
+      // Resolve target surface color & opacity:
+      // - Monochrome mode: take spec values directly.
+      // - Color mode: blend the building's identity color with the spec's
+      //   tint per the colorModeOverlay ratio. This lets accent treatments
+      //   (hover/selected/pressed) still read while the building's identity
+      //   stays visible at rest, and lets background/disabled fully recede.
+      let targetSurface = colors.surface;
+      let targetOpacity = spec.surfaceOpacity;
+      if (colorMode) {
+        const overlay = colorModeOverlay[target] ?? colorModeOverlay.default;
+        targetSurface = _scratchColor
+          .copy(b.userData.baseColor)
+          .lerp(colors.surface, overlay.ratio);
+        targetOpacity = overlay.opacity;
+      }
+
+      cur.surfaceColor.lerp(targetSurface, t);
+      cur.surfaceOpacity = lerp(cur.surfaceOpacity, targetOpacity, t);
       cur.outlineColor.lerp(colors.outline, t);
       cur.outlineWidth = lerp(cur.outlineWidth, spec.outlineWidth, t);
       cur.outlineOpacity = lerp(cur.outlineOpacity, spec.outlineOpacity, t);

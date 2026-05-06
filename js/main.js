@@ -111,6 +111,22 @@ window.addEventListener("keydown", (e) => {
     controller.clearAll();
     document.body.style.cursor = "default";
   }
+  if (e.key === "c" || e.key === "C") {
+    setColorMode(!controller.colorMode);
+  }
+});
+
+/* ---------- Color mode toggle ---------- */
+
+const colorToggle = document.querySelector("[data-color-toggle]");
+
+function setColorMode(on) {
+  controller.setColorMode(on);
+  colorToggle.setAttribute("aria-pressed", on ? "true" : "false");
+}
+
+colorToggle.addEventListener("click", () => {
+  setColorMode(!controller.colorMode);
 });
 
 /* ---------- Render loop ---------- */
