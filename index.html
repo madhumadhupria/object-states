@@ -15,6 +15,18 @@
     </script>
   </head>
   <body>
+    <script>
+      if (location.protocol === "file:") {
+        document.body.innerHTML =
+          '<main style="font:16px/1.5 system-ui,sans-serif;max-width:36rem;margin:3rem auto;padding:0 1rem">' +
+          "<h1>Object States</h1>" +
+          "<p>This page must be served over HTTP (ES modules do not work from <code>file://</code>).</p>" +
+          "<p>From the project folder, run:</p>" +
+          "<pre style;background:#eee;padding:1rem;border-radius:6px">python3 -m http.server 5173</pre>" +
+          "<p>Then open <a href=\"http://localhost:5173/\">http://localhost:5173/</a></p>" +
+          "</main>";
+      }
+    </script>
     <main id="stage" aria-label="3D scene"></main>
 
     <button

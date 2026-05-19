@@ -1,0 +1,8 @@
+{
+  "name": "object-states",
+  "private": true,
+  "scripts": {
+    "start": "python3 -m http.server 5173",
+    "open": "open http://localhost:5173/"
+  }
+}
